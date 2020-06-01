@@ -75,7 +75,6 @@ public class MainActivity extends AppCompatActivity {
         TabLayout tabLayout = findViewById(R.id.tabLayout);
         ViewPagerAdapter viewPagerAdapter = new ViewPagerAdapter(getSupportFragmentManager());
         viewPagerAdapter.addFragments(new SongsFragment(),"Songs");
-        viewPagerAdapter.addFragments(new AlbumFragment(),"Albums");
         viewPager.setAdapter(viewPagerAdapter);
         tabLayout.setupWithViewPager(viewPager) ;
     }
@@ -147,17 +146,17 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
     protected void onDestroy() {
-        super.onDestroy();
-        PlayerActivity play = new PlayerActivity();
-        if(play.mediaPlayer !=null)
-        {
-            play.mediaPlayer.stop();
-            play.mediaPlayer.release();
-            play.mediaPlayer= null;
-        }
+            super.onDestroy();
+            PlayerActivity play = new PlayerActivity();
+            if (play.mediaPlayer != null) {
+                play.mediaPlayer.stop();
+                play.mediaPlayer.release();
+                play.mediaPlayer = null;
+            }
             //Disable the PhoneStateListener
             if (play.phoneStateListener != null) {
                 play.telephonyManager.listen(play.phoneStateListener, PhoneStateListener.LISTEN_NONE);
             }
-    }
+
+        }
 }

@@ -4,11 +4,13 @@ import android.app.Notification;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Build;
 import android.support.v4.media.session.MediaSessionCompat;
 
 import androidx.core.app.NotificationCompat;
-import androidx.core.app.NotificationManagerCompat;
+import androidx.core.app.NotificationManagerCompat  ;
 
 import com.example.musicplayer.Services.NotificationActionService;
 
@@ -17,18 +19,20 @@ public class CreateNotification {
     public static final String ACTION_PREVIOUS ="actionPrevious";
     public static final String ACTION_PLAY ="actionPlay";
     public static final String ACTION_NEXT ="actionNext";
-    private static MediaSessionCompat mediaSessionCompat;
+    private static final int NOTIFICATION_ID = 101;
 
 
     public static Notification notification;
-    //instance of the playerActivity class
-    PlayerActivity play = new PlayerActivity();
+
+
+
 
     public static void  createNotification(Context context,MusicFiles musicFiles, int playbutton, int pos,int size){
         if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.O){
             NotificationManagerCompat notificationManagerCompat = NotificationManagerCompat.from(context);
-             mediaSessionCompat = new MediaSessionCompat(context,"tag");
-//            Bitmap icon = BitmapFactory.decodeResource(context.getResources(),R.drawable.ic_repeat_on);
+            MediaSessionCompat mediaSessionCompat = new MediaSessionCompat(context, "tag");
+            Intent intent = new Intent(context, PlayerActivity.class);
+            intent.putExtra(" com.example.musicplayer.notifyId", NOTIFICATION_ID);
 
             PendingIntent pendingIntentPrevious;
             int dew_previous;
@@ -61,12 +65,14 @@ public class CreateNotification {
                 pendingIntentNext = PendingIntent.getBroadcast(context,0,intentNext,PendingIntent.FLAG_UPDATE_CURRENT);
                 drw_Next = R.drawable.ic_skip_next;
             }
+            Bitmap icon = BitmapFactory.decodeResource(context.getResources(),R.drawable.headphone);
+
 
             //creating a notification
             notification = new NotificationCompat.Builder(context,CHANNEL_ID)
                     .setSmallIcon(R.drawable.ic_music_note)
                     .setContentText(musicFiles.getTitle())
-//                    .setLargeIcon(icon)
+                    .setLargeIcon(icon)
                     .setOnlyAlertOnce(true)
                     .setShowWhen(false)
                     .addAction(dew_previous,"Previous",pendingIntentPrevious)
@@ -79,8 +85,10 @@ public class CreateNotification {
                     .setPriority(NotificationCompat.PRIORITY_LOW)
                     .build();
 
-            notificationManagerCompat.notify(1,notification);
+            notificationManagerCompat.notify(NOTIFICATION_ID,notification);
         }
+
+
 
 
     }

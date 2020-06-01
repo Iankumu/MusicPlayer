@@ -49,6 +49,8 @@ public class PlayerActivity extends AppCompatActivity implements Playable {
     public static TelephonyManager telephonyManager;
 
     private int resumePosition;
+    int positions = 0;
+
 
 
     @Override
@@ -101,16 +103,34 @@ public class PlayerActivity extends AppCompatActivity implements Playable {
         }
         CreateNotification.createNotification(PlayerActivity.this,musicFiles.get(position),R.drawable.ic_pause,1, musicFiles.size()-1);
 
+        Intent intent = new Intent( getApplicationContext(), CreateNotification.class );
+        intent.setAction( CreateNotification.ACTION_PLAY );
+        startService( intent );
+
+        NotificationManager notificationmanager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+
     }
+
+
 
     private void repeatBtnClicked() {
         repeatBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 
-                repeatBtn.setImageResource(R.drawable.ic_repeat_one);
-                mediaPlayer.setLooping(true);
-                mediaPlayer.start();
+                if(true) {
+                    repeatBtn.setImageResource(R.drawable.ic_repeat_one);
+                    mediaPlayer.setLooping(true);
+                    play_pauseBtn.setImageResource(R.drawable.ic_pause);
+                    mediaPlayer.start();
+                }
+                else
+                {
+                    repeatBtn.setImageResource(R.drawable.ic_repeat_on);
+                    mediaPlayer.setLooping(false);
+                    play_pauseBtn.setImageResource(R.drawable.ic_pause);
+                    mediaPlayer.start();
+                }
             }
 
         });
@@ -165,7 +185,6 @@ public class PlayerActivity extends AppCompatActivity implements Playable {
                         seekBar.setProgress(mCurrentPosition);
                     }
                     handler.postDelayed(this,1000);
-
                 }
             });
         }
@@ -183,7 +202,6 @@ public class PlayerActivity extends AppCompatActivity implements Playable {
                         seekBar.setProgress(mCurrentPosition);
                     }
                     handler.postDelayed(this,1000);
-
                 }
             });
         }
@@ -320,6 +338,7 @@ public class PlayerActivity extends AppCompatActivity implements Playable {
         }
     }
 
+
     private String  formattedText(int mCurrentPosition) {
         String totalout ="";
         String totalNew = "";
@@ -445,6 +464,7 @@ public class PlayerActivity extends AppCompatActivity implements Playable {
         public void onReceive(Context context, Intent intent) {
             //pause audio on ACTION_AUDIO_BECOMING_NOISY
             pauseMedia();
+            play_pauseBtn.setImageResource(R.drawable.ic_play_arrow);
 //            buildNotification(PlaybackStatus.PAUSED);
         }
     };
@@ -453,9 +473,10 @@ public class PlayerActivity extends AppCompatActivity implements Playable {
         //register after getting audio focus
         IntentFilter intentFilter = new IntentFilter(AudioManager.ACTION_AUDIO_BECOMING_NOISY);
         registerReceiver(becomingNoisyReceiver, intentFilter);
+
     }
 
-    BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
+    BroadcastReceiver   broadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             String action = intent.getExtras().getString("actionname");
@@ -482,9 +503,10 @@ public class PlayerActivity extends AppCompatActivity implements Playable {
     };
     @Override
     public void onTrackPrevious() {
-        int positions = ((position - 1) < 0 ? (listofsongs.size() - 1) : (position - 1));
-        CreateNotification.createNotification(PlayerActivity.this,musicFiles.get(position),R.drawable.ic_pause,positions,musicFiles.size()-1);
-        playMedia();
+        positions = ((position - 1) <0 ? (listofsongs.size() -1) :(position-1));
+        CreateNotification.createNotification(PlayerActivity.this,musicFiles.get(positions),R.drawable.ic_pause,positions,musicFiles.size()-1);
+        skipToPrevious();
+
 
     }
 
@@ -492,24 +514,25 @@ public class PlayerActivity extends AppCompatActivity implements Playable {
     public void onTrackPlay() {
 
         CreateNotification.createNotification(PlayerActivity.this,musicFiles.get(position),R.drawable.ic_pause,position,musicFiles.size()-1);
-
-           resumeMedia();
            play_pauseBtn.setImageResource(R.drawable.ic_pause);
+           resumeMedia();
 
     }
 
     @Override
     public void onTrackPause() {
-        CreateNotification.createNotification(PlayerActivity.this,musicFiles.get(position),R.drawable.ic_play_arrow,position,musicFiles.size()-1);
+        CreateNotification.createNotification(PlayerActivity.this, musicFiles.get(position), R.drawable.ic_play_arrow, position, musicFiles.size() - 1);
         play_pauseBtn.setImageResource(R.drawable.ic_play_arrow);
-            pauseMedia();
+        pauseMedia();
+
     }
 
     @Override
     public void onTrackNext() {
-        int positions = ((position + 1) % listofsongs.size());
-        CreateNotification.createNotification(PlayerActivity.this,musicFiles.get(position),R.drawable.ic_pause,positions,musicFiles.size()-1);
-        playMedia();
+        positions = ((position + 1)% listofsongs.size());
+        CreateNotification.createNotification(PlayerActivity.this,musicFiles.get(positions),R.drawable.ic_pause,positions,musicFiles.size()-1);
+        skipToNext();
+
     }
 
 
@@ -534,6 +557,35 @@ public class PlayerActivity extends AppCompatActivity implements Playable {
         }
     }
 
+    private void skipToNext() {
+        if (mediaPlayer.isPlaying()) {
+            mediaPlayer.stop();
+            mediaPlayer.release();
+            position = ((position + 1) % listofsongs.size());
+            uri = Uri.parse(listofsongs.get(position).getPath());
+            mediaPlayer = MediaPlayer.create(getApplicationContext(), uri);
+            metaData(uri);
+            song_name.setText(listofsongs.get(position).getTitle());
+            artist_name.setText(listofsongs.get(position).getArtist());
+            playMedia();
+        }
+    }
+    private void skipToPrevious() {
+
+        if(mediaPlayer.isPlaying()) {
+            mediaPlayer.stop();
+            mediaPlayer.release();
+            position = ((position - 1) < 0 ? (listofsongs.size() - 1) : (position - 1));
+            uri = Uri.parse(listofsongs.get(position).getPath());
+            mediaPlayer = MediaPlayer.create(getApplicationContext(), uri);
+            metaData(uri);
+            song_name.setText(listofsongs.get(position).getTitle());
+            artist_name.setText(listofsongs.get(position).getArtist());
+            playMedia();
+        }
+    }
+
+
 
 
     @Override
@@ -543,8 +595,5 @@ public class PlayerActivity extends AppCompatActivity implements Playable {
             notificationManager.cancelAll();
         }
         unregisterReceiver(broadcastReceiver);
-
     }
-
-
 }
