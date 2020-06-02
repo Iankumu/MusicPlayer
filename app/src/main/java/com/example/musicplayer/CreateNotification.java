@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Build;
+import android.os.Bundle;
 import android.support.v4.media.session.MediaSessionCompat;
 
 import androidx.core.app.NotificationCompat;
@@ -28,6 +29,7 @@ public class CreateNotification {
 
 
     public static void  createNotification(Context context,MusicFiles musicFiles, int playbutton, int pos,int size){
+
         if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.O){
             NotificationManagerCompat notificationManagerCompat = NotificationManagerCompat.from(context);
             MediaSessionCompat mediaSessionCompat = new MediaSessionCompat(context, "tag");
@@ -66,7 +68,6 @@ public class CreateNotification {
                 drw_Next = R.drawable.ic_skip_next;
             }
             Bitmap icon = BitmapFactory.decodeResource(context.getResources(),R.drawable.headphone);
-
 
             //creating a notification
             notification = new NotificationCompat.Builder(context,CHANNEL_ID)

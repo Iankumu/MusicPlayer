@@ -38,7 +38,7 @@ public class MusicAdapter extends RecyclerView.Adapter<MusicAdapter.ViewHolder> 
         holder.file_name.setText(mFiles.get(position).getTitle());
         byte[] image = getAlbumArt(mFiles.get(position).getPath());
 
-        //setting the embeded image of a music file and if null set a default image
+        //setting the embedded image of a music file and if null set a default image
         if (image != null) {
             Glide.with(mcontext).asBitmap()
                     .load(image)
